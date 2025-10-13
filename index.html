@@ -30,7 +30,7 @@
         }
 
         .app-container {
-            max-width: 800px;
+            max-width: 1200px; /* Increased width for larger map */
             margin: 0 auto;
             background: white;
             border-radius: 20px;
@@ -43,7 +43,7 @@
 
         .header {
             background: white;
-            padding: 20px;
+            padding: 15px; /* Reduced padding for more map space */
             text-align: center;
             border-bottom: 2px solid var(--light);
         }
@@ -64,12 +64,13 @@
         }
 
         #map {
-            flex: 1;
+            flex: 1; /* Map takes more space now */
             width: 100%;
+            min-height: 0; /* Important for flex child to respect container height */
         }
 
         .controls {
-            padding: 20px;
+            padding: 15px; /* Reduced padding for more map space */
             background: var(--light);
             border-top: 2px solid #e9ecef;
         }
@@ -77,12 +78,12 @@
         .user-type {
             display: flex;
             gap: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
 
         .user-btn {
             flex: 1;
-            padding: 15px;
+            padding: 12px;
             border: 2px solid #ddd;
             border-radius: 10px;
             background: white;
@@ -101,7 +102,7 @@
         .btn {
             background: linear-gradient(135deg, var(--primary), #004d36);
             color: white;
-            padding: 15px;
+            padding: 12px;
             border: none;
             border-radius: 10px;
             cursor: pointer;
@@ -134,16 +135,16 @@
 
         .location-info {
             background: white;
-            padding: 15px;
+            padding: 12px;
             border-radius: 10px;
-            margin-top: 15px;
+            margin-top: 12px;
             display: none;
         }
 
         .info-item {
             display: flex;
             justify-content: space-between;
-            margin: 8px 0;
+            margin: 6px 0;
             padding: 5px 0;
             border-bottom: 1px solid #f1f1f1;
         }
@@ -199,7 +200,7 @@
 
         .share-code input {
             flex: 1;
-            padding: 12px;
+            padding: 10px;
             border: 2px solid #e9ecef;
             border-radius: 10px;
             font-size: 16px;
@@ -209,7 +210,7 @@
         }
 
         .share-code button {
-            padding: 12px 20px;
+            padding: 10px 15px;
             background: var(--primary);
             color: white;
             border: none;
@@ -229,10 +230,10 @@
         }
 
         .connection-status {
-            padding: 10px;
+            padding: 8px;
             border-radius: 10px;
             text-align: center;
-            margin: 10px 0;
+            margin: 8px 0;
             font-weight: 600;
         }
 
@@ -330,6 +331,7 @@
         let shareCode = '';
         let otherUserLocation = null;
         let yourLocation = null;
+        let isConnected = false;
 
         // Initialize the application
         function init() {
@@ -424,6 +426,7 @@
             // In a real app, you would validate this code with a server
             // For demo, we'll accept any code starting with DRV-
             if (code.startsWith('DRV-')) {
+                isConnected = true;
                 document.getElementById('connectionStatus').style.display = 'block';
                 document.getElementById('connectionStatus').className = 'connection-status status-connected';
                 document.getElementById('statusText').textContent = `Connected to Driver: ${code}`;
@@ -431,6 +434,11 @@
                 
                 // Simulate receiving driver location
                 simulateOtherUserLocation();
+                
+                // Ensure markers are visible
+                if (yourLocation && map.hasLayer(yourMarker)) {
+                    yourMarker.addTo(map);
+                }
             } else {
                 showNotification('Invalid driver code format', 'error');
             }
@@ -480,7 +488,7 @@
             const lng = position.coords.longitude;
             yourLocation = { lat, lng };
             
-            // Update marker
+            // Update marker - always ensure it's on the map when sharing
             if (!map.hasLayer(yourMarker)) {
                 yourMarker.setLatLng([lat, lng]).addTo(map);
             } else {
@@ -519,7 +527,7 @@
                 lng: yourLocation.lng + offsetLng
             };
             
-            // Update marker
+            // Update marker - always ensure it's on the map when connected
             if (!map.hasLayer(otherMarker)) {
                 otherMarker.setLatLng([otherUserLocation.lat, otherUserLocation.lng]).addTo(map);
             } else {
@@ -548,8 +556,10 @@
             
             updateDistance();
             
-            // Simulate movement every 10 seconds
-            setTimeout(simulateOtherUserLocation, 10000);
+            // Simulate movement every 10 seconds if still connected
+            if (isConnected) {
+                setTimeout(simulateOtherUserLocation, 10000);
+            }
         }
 
         // Update distance between users
@@ -583,6 +593,7 @@
         // Stop sharing location
         function stopSharing() {
             isSharing = false;
+            isConnected = false;
             
             // Stop tracking
             if (trackingInterval) {
