@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LocationShare - Driver & Customer</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <title>RideShare - Simple Uber Style App</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" 
+          integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" 
+          crossorigin=""/>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         * {
@@ -15,96 +17,209 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #006847 0%, #004d36 100%);
-            min-height: 100vh;
-            padding: 10px;
+            background: #f5f5f5;
+            height: 100vh;
+            overflow: hidden;
         }
 
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        .app-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
         .header {
             background: linear-gradient(135deg, #006847, #004d36);
             color: white;
-            padding: 20px;
-            text-align: center;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            z-index: 1000;
         }
 
         .header h1 {
-            font-size: 24px;
-            margin-bottom: 5px;
-        }
-
-        .header p {
-            font-size: 13px;
-            opacity: 0.9;
-        }
-
-        #map {
-            width: 100%;
-            height: 400px;
-        }
-
-        .controls {
-            padding: 20px;
-            background: #f8f9fa;
-        }
-
-        .role-selector {
+            font-size: 22px;
             display: flex;
+            align-items: center;
             gap: 10px;
-            margin-bottom: 20px;
         }
 
-        .role-btn {
-            flex: 1;
-            padding: 15px;
-            border: 2px solid #ddd;
-            background: white;
-            border-radius: 10px;
+        .role-toggle {
+            display: flex;
+            background: rgba(255,255,255,0.2);
+            border-radius: 25px;
+            padding: 4px;
+        }
+
+        .role-toggle button {
+            padding: 8px 20px;
+            border: none;
+            background: transparent;
+            color: white;
+            border-radius: 20px;
             cursor: pointer;
-            font-size: 16px;
             font-weight: 600;
             transition: all 0.3s;
         }
 
-        .role-btn:hover {
-            transform: translateY(-2px);
+        .role-toggle button.active {
+            background: white;
+            color: #006847;
         }
 
-        .role-btn.active {
-            background: #006847;
-            color: white;
+        #map {
+            flex: 1;
+            position: relative;
+        }
+
+        .map-overlay {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            right: 15px;
+            z-index: 500;
+            display: flex;
+            gap: 10px;
+        }
+
+        .info-card {
+            background: white;
+            padding: 12px 15px;
+            border-radius: 12px;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.15);
+            flex: 1;
+            font-size: 13px;
+        }
+
+        .info-card strong {
+            display: block;
+            color: #006847;
+            margin-bottom: 4px;
+        }
+
+        .bottom-panel {
+            background: white;
+            border-radius: 25px 25px 0 0;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
+            padding: 25px;
+            max-height: 50vh;
+            overflow-y: auto;
+        }
+
+        .trip-status {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .status-badge.waiting {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-badge.active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.arriving {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .eta-display {
+            font-size: 32px;
+            font-weight: bold;
+            color: #006847;
+            margin: 10px 0;
+        }
+
+        .eta-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .share-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .share-section h3 {
+            color: #006847;
+            font-size: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .code-display {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .code-display input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 20px;
+            text-align: center;
+            font-weight: bold;
+            letter-spacing: 2px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .code-display input:focus {
+            outline: none;
             border-color: #006847;
         }
 
-        .section {
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 15px;
-        }
-
-        .section h3 {
-            color: #006847;
-            margin-bottom: 10px;
-            font-size: 16px;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(135deg, #006847, #004d36);
+        .code-display button {
+            padding: 15px 20px;
+            background: #006847;
             color: white;
             border: none;
             border-radius: 10px;
+            cursor: pointer;
             font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        .code-display button:hover {
+            background: #004d36;
+        }
+
+        .helper-text {
+            color: #666;
+            font-size: 13px;
+            text-align: center;
+            line-height: 1.5;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, #006847, #004d36);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 17px;
             font-weight: 600;
             cursor: pointer;
             display: flex;
@@ -112,118 +227,112 @@
             justify-content: center;
             gap: 10px;
             transition: all 0.3s;
+            margin-bottom: 12px;
         }
 
-        .btn:hover {
+        .btn-primary:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,104,71,0.3);
+            box-shadow: 0 5px 20px rgba(0,104,71,0.3);
         }
 
-        .btn:disabled {
-            background: #999;
+        .btn-primary:disabled {
+            background: #ccc;
             cursor: not-allowed;
             transform: none;
         }
 
-        .btn-stop {
+        .btn-danger {
             background: linear-gradient(135deg, #CE1126, #a50d1e);
-            margin-top: 10px;
         }
 
-        .code-input {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
+        .btn-success {
+            background: linear-gradient(135deg, #28a745, #20c997);
         }
 
-        .code-input input {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 16px;
-            text-align: center;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-
-        .code-input button {
-            padding: 12px 20px;
-            background: #006847;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        .code-input button:hover {
-            background: #004d36;
-        }
-
-        .info-box {
-            background: #e8f5e9;
-            padding: 12px;
-            border-radius: 8px;
-            margin-top: 10px;
-            font-size: 14px;
-            color: #2e7d32;
-        }
-
-        .status-box {
-            background: white;
+        .trip-info {
+            background: #f8f9fa;
             padding: 15px;
-            border-radius: 10px;
+            border-radius: 12px;
             margin-bottom: 15px;
         }
 
-        .status-item {
+        .trip-row {
             display: flex;
             justify-content: space-between;
-            padding: 8px 0;
-            border-bottom: 1px solid #f0f0f0;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
         }
 
-        .status-item:last-child {
+        .trip-row:last-child {
             border-bottom: none;
         }
 
-        .status-label {
-            font-weight: 600;
+        .trip-label {
             color: #666;
+            font-weight: 600;
         }
 
-        .status-value {
+        .trip-value {
             color: #333;
             font-weight: 500;
         }
 
+        .distance-badge {
+            background: #006847;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .pulse-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background: #28a745;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+        }
+
         .notification {
             position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 15px 25px;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-150px);
             background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-            transform: translateX(400px);
-            transition: transform 0.3s;
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.2);
             z-index: 10000;
+            transition: transform 0.3s;
             font-weight: 600;
+            max-width: 90%;
         }
 
         .notification.show {
-            transform: translateX(0);
+            transform: translateX(-50%) translateY(0);
         }
 
         .notification.success {
-            background: #28a745;
-            color: white;
+            border-left: 4px solid #28a745;
+            color: #155724;
         }
 
         .notification.error {
-            background: #CE1126;
-            color: white;
+            border-left: 4px solid #CE1126;
+            color: #721c24;
+        }
+
+        .notification.info {
+            border-left: 4px solid #0056b3;
+            color: #004085;
         }
 
         .hide {
@@ -231,119 +340,162 @@
         }
 
         @media (max-width: 768px) {
-            body {
-                padding: 0;
+            .header h1 {
+                font-size: 18px;
             }
-            .container {
-                border-radius: 0;
-                min-height: 100vh;
+            
+            .map-overlay {
+                flex-direction: column;
             }
-            #map {
-                height: 300px;
+            
+            .eta-display {
+                font-size: 26px;
             }
+        }
+
+        .center-btn {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: white;
+            border: none;
+            border-radius: 50%;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            cursor: pointer;
+            font-size: 20px;
+            color: #006847;
+            z-index: 600;
+            transition: all 0.3s;
+        }
+
+        .center-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="app-container">
         <div class="header">
-            <h1><i class="fas fa-map-marked-alt"></i> LocationShare</h1>
-            <p>Real-time location tracking made simple</p>
-        </div>
-
-        <div id="map"></div>
-
-        <div class="controls">
-            <div class="role-selector">
-                <button class="role-btn active" onclick="selectRole('driver')">
-                    <i class="fas fa-car"></i> Driver
+            <h1><i class="fas fa-car"></i> RideShare</h1>
+            <div class="role-toggle">
+                <button id="driverBtn" class="active" onclick="switchRole('driver')">
+                    <i class="fas fa-steering-wheel"></i> Driver
                 </button>
-                <button class="role-btn" onclick="selectRole('customer')">
-                    <i class="fas fa-user"></i> Customer
+                <button id="customerBtn" onclick="switchRole('customer')">
+                    <i class="fas fa-user"></i> Rider
                 </button>
             </div>
+        </div>
 
+        <div id="map">
+            <div class="map-overlay hide" id="mapOverlay">
+                <div class="info-card">
+                    <strong><i class="fas fa-route"></i> Distance</strong>
+                    <span id="distanceDisplay">--</span>
+                </div>
+                <div class="info-card">
+                    <strong><i class="fas fa-clock"></i> ETA</strong>
+                    <span id="etaDisplay">--</span>
+                </div>
+            </div>
+            <button class="center-btn hide" id="centerBtn" onclick="centerMap()">
+                <i class="fas fa-location-crosshairs"></i>
+            </button>
+        </div>
+
+        <div class="bottom-panel">
             <!-- Driver View -->
-            <div id="driverView">
-                <div class="section">
-                    <h3><i class="fas fa-share-nodes"></i> Your Share Code</h3>
-                    <div class="code-input">
+            <div id="driverPanel">
+                <div class="trip-status">
+                    <div class="status-badge waiting" id="driverStatus">
+                        <i class="fas fa-circle-notch"></i>
+                        <span>Waiting for Rider</span>
+                    </div>
+                </div>
+
+                <div class="share-section">
+                    <h3><i class="fas fa-qrcode"></i> Your Ride Code</h3>
+                    <div class="code-display">
                         <input type="text" id="driverCode" readonly>
                         <button onclick="copyCode()">
                             <i class="fas fa-copy"></i>
                         </button>
                     </div>
-                    <div class="info-box">
-                        Share this code with your customer to connect
-                    </div>
+                    <p class="helper-text">Share this code with your rider so they can track you</p>
                 </div>
 
-                <button class="btn" id="driverStartBtn" onclick="startSharing()">
-                    <i class="fas fa-location-arrow"></i> Start Sharing My Location
+                <button class="btn-primary" id="startDrivingBtn" onclick="startTrip()">
+                    <i class="fas fa-play"></i> Start Trip
                 </button>
 
-                <div id="driverStatus" class="status-box hide">
-                    <h3 style="margin-bottom: 10px; color: #006847;">
-                        <i class="fas fa-info-circle"></i> Location Status
-                    </h3>
-                    <div class="status-item">
-                        <span class="status-label">Your Location:</span>
-                        <span class="status-value" id="driverCoords">--</span>
+                <div class="trip-info hide" id="driverTripInfo">
+                    <div class="trip-row">
+                        <span class="trip-label"><i class="fas fa-location-dot"></i> Your Location</span>
+                        <span class="trip-value" id="driverLocation">Getting...</span>
                     </div>
-                    <div class="status-item">
-                        <span class="status-label">Customer Location:</span>
-                        <span class="status-value" id="customerCoords">--</span>
+                    <div class="trip-row">
+                        <span class="trip-label"><i class="fas fa-user-check"></i> Rider Location</span>
+                        <span class="trip-value" id="riderLocation">Waiting...</span>
                     </div>
-                    <div class="status-item">
-                        <span class="status-label">Distance:</span>
-                        <span class="status-value" id="distance">--</span>
+                    <div class="trip-row">
+                        <span class="trip-label"><i class="fas fa-gauge-high"></i> Status</span>
+                        <span class="trip-value"><span class="pulse-dot"></span>Active</span>
                     </div>
                 </div>
 
-                <button class="btn btn-stop hide" id="driverStopBtn" onclick="stopSharing()">
-                    <i class="fas fa-stop"></i> Stop Sharing
+                <button class="btn-primary btn-danger hide" id="endTripBtn" onclick="endTrip()">
+                    <i class="fas fa-flag-checkered"></i> End Trip
                 </button>
             </div>
 
-            <!-- Customer View -->
-            <div id="customerView" class="hide">
-                <div class="section">
+            <!-- Customer/Rider View -->
+            <div id="customerPanel" class="hide">
+                <div class="trip-status">
+                    <div class="status-badge waiting" id="customerStatus">
+                        <i class="fas fa-search"></i>
+                        <span>Enter Driver Code</span>
+                    </div>
+                    <div class="eta-display hide" id="etaTime">-- min</div>
+                    <div class="eta-label hide" id="etaLabel">Estimated arrival</div>
+                </div>
+
+                <div class="share-section">
                     <h3><i class="fas fa-link"></i> Connect to Driver</h3>
-                    <div class="code-input">
-                        <input type="text" id="customerCodeInput" placeholder="Enter driver code">
-                        <button onclick="connectDriver()">
-                            <i class="fas fa-plug"></i>
+                    <div class="code-display">
+                        <input type="text" id="riderCodeInput" placeholder="Enter code (e.g., DRV-5UXM)" maxlength="8">
+                        <button onclick="connectToDriver()">
+                            <i class="fas fa-arrow-right"></i>
                         </button>
                     </div>
-                    <div class="info-box">
-                        Ask your driver for their share code
-                    </div>
+                    <p class="helper-text">Get the code from your driver to start tracking</p>
                 </div>
 
-                <button class="btn" id="customerStartBtn" onclick="startSharing()">
-                    <i class="fas fa-location-arrow"></i> Start Sharing My Location
+                <button class="btn-primary hide" id="shareLocationBtn" onclick="shareRiderLocation()">
+                    <i class="fas fa-location-arrow"></i> Share My Location
                 </button>
 
-                <div id="customerStatus" class="status-box hide">
-                    <h3 style="margin-bottom: 10px; color: #006847;">
-                        <i class="fas fa-info-circle"></i> Location Status
-                    </h3>
-                    <div class="status-item">
-                        <span class="status-label">Your Location:</span>
-                        <span class="status-value" id="customerYourCoords">--</span>
+                <div class="trip-info hide" id="customerTripInfo">
+                    <div class="trip-row">
+                        <span class="trip-label"><i class="fas fa-map-pin"></i> Your Location</span>
+                        <span class="trip-value" id="riderYourLocation">Getting...</span>
                     </div>
-                    <div class="status-item">
-                        <span class="status-label">Driver Location:</span>
-                        <span class="status-value" id="driverLocation">--</span>
+                    <div class="trip-row">
+                        <span class="trip-label"><i class="fas fa-car"></i> Driver Location</span>
+                        <span class="trip-value" id="driverLocationForRider">Waiting...</span>
                     </div>
-                    <div class="status-item">
-                        <span class="status-label">Distance:</span>
-                        <span class="status-value" id="customerDistance">--</span>
+                    <div class="trip-row">
+                        <span class="trip-label"><i class="fas fa-road"></i> Distance</span>
+                        <span class="trip-value">
+                            <span class="distance-badge" id="distanceBadge">--</span>
+                        </span>
                     </div>
                 </div>
 
-                <button class="btn btn-stop hide" id="customerStopBtn" onclick="stopSharing()">
-                    <i class="fas fa-stop"></i> Stop Sharing
+                <button class="btn-primary btn-danger hide" id="cancelTripBtn" onclick="endTrip()">
+                    <i class="fas fa-times"></i> Cancel Trip
                 </button>
             </div>
         </div>
@@ -351,29 +503,46 @@
 
     <div class="notification" id="notification"></div>
 
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+            integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+            crossorigin=""></script>
     <script>
-        let map, yourMarker, otherMarker, routeLine;
+        // Global state
+        let map;
+        let driverMarker = null;
+        let riderMarker = null;
+        let routeLine = null;
         let currentRole = 'driver';
-        let isSharing = false;
-        let yourLocation = null;
-        let otherLocation = null;
+        let tripActive = false;
+        let driverLocation = null;
+        let riderLocation = null;
         let watchId = null;
-        let updateInterval = null;
+        let connectedCode = null;
+        let simulationInterval = null;
 
-        // Initialize map
-        function initMap() {
-            map = L.map('map').setView([40.7128, -74.0060], 13);
+        // Initialize app
+        function init() {
+            // Initialize map centered on Mexico City
+            map = L.map('map').setView([19.4326, -99.1332], 13);
             
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors',
+                attribution: '© OpenStreetMap',
                 maxZoom: 19
             }).addTo(map);
 
             generateDriverCode();
+            
+            // Add event listener for Enter key in rider code input
+            document.getElementById('riderCodeInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    connectToDriver();
+                }
+            });
+            
+            console.log('RideShare app initialized');
         }
 
-        // Generate random driver code
+        // Generate unique driver code
         function generateDriverCode() {
             const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
             let code = 'DRV-';
@@ -381,311 +550,424 @@
                 code += chars[Math.floor(Math.random() * chars.length)];
             }
             document.getElementById('driverCode').value = code;
+            return code;
         }
 
         // Copy code to clipboard
         function copyCode() {
             const input = document.getElementById('driverCode');
             input.select();
-            document.execCommand('copy');
-            showNotification('Code copied to clipboard!', 'success');
+            input.setSelectionRange(0, 99999);
+            
+            try {
+                document.execCommand('copy');
+                showNotification('Code copied! Share it with your rider', 'success');
+            } catch (err) {
+                showNotification('Code copied to clipboard', 'success');
+            }
         }
 
-        // Select role
-        function selectRole(role) {
-            if (isSharing) {
-                showNotification('Stop sharing before switching roles', 'error');
+        // Switch between driver and rider roles
+        function switchRole(role) {
+            if (tripActive) {
+                showNotification('End current trip before switching roles', 'error');
                 return;
             }
 
             currentRole = role;
+
+            // Update UI
+            document.getElementById('driverBtn').classList.toggle('active', role === 'driver');
+            document.getElementById('customerBtn').classList.toggle('active', role === 'customer');
+            document.getElementById('driverPanel').classList.toggle('hide', role === 'customer');
+            document.getElementById('customerPanel').classList.toggle('hide', role === 'driver');
+
+            // Reset UI elements when switching roles
+            resetUI();
             
-            // Update UI
-            document.querySelectorAll('.role-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event.target.closest('.role-btn').classList.add('active');
-
-            // Show/hide views
-            document.getElementById('driverView').classList.toggle('hide', role === 'customer');
-            document.getElementById('customerView').classList.toggle('hide', role === 'driver');
-
-            showNotification(`Switched to ${role} mode`, 'success');
+            showNotification(`Switched to ${role === 'driver' ? 'Driver' : 'Rider'} mode`, 'info');
         }
 
-        // Connect driver (customer function)
-        function connectDriver() {
-            const code = document.getElementById('customerCodeInput').value.trim().toUpperCase();
-            if (!code) {
-                showNotification('Please enter a driver code', 'error');
-                return;
+        // Reset UI elements
+        function resetUI() {
+            // Clear markers
+            if (driverMarker) {
+                map.removeLayer(driverMarker);
+                driverMarker = null;
             }
-            if (!code.startsWith('DRV-')) {
-                showNotification('Invalid code format', 'error');
-                return;
-            }
-            showNotification('Connected to driver!', 'success');
-            // Simulate getting driver location
-            setTimeout(() => {
-                if (yourLocation) {
-                    simulateOtherLocation();
-                }
-            }, 2000);
-        }
-
-        // Start sharing location
-        function startSharing() {
-            if (!navigator.geolocation) {
-                showNotification('Geolocation not supported', 'error');
-                return;
-            }
-
-            isSharing = true;
-
-            // Update UI
-            if (currentRole === 'driver') {
-                document.getElementById('driverStartBtn').disabled = true;
-                document.getElementById('driverStatus').classList.remove('hide');
-                document.getElementById('driverStopBtn').classList.remove('hide');
-            } else {
-                document.getElementById('customerStartBtn').disabled = true;
-                document.getElementById('customerStatus').classList.remove('hide');
-                document.getElementById('customerStopBtn').classList.remove('hide');
-            }
-
-            // Start watching position
-            watchId = navigator.geolocation.watchPosition(
-                updateLocation,
-                handleError,
-                {
-                    enableHighAccuracy: true,
-                    timeout: 10000,
-                    maximumAge: 0
-                }
-            );
-
-            showNotification('Sharing your location...', 'success');
-
-            // Simulate other user for demo
-            setTimeout(() => {
-                if (isSharing) {
-                    simulateOtherLocation();
-                }
-            }, 3000);
-        }
-
-        // Update your location
-        function updateLocation(position) {
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
-            yourLocation = { lat, lng };
-
-            // Create or update marker
-            const icon = L.divIcon({
-                html: `<div style="background: ${currentRole === 'driver' ? '#006847' : '#CE1126'}; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
-                    <i class="fas fa-${currentRole === 'driver' ? 'car' : 'user'}"></i>
-                </div>`,
-                iconSize: [40, 40],
-                iconAnchor: [20, 20]
-            });
-
-            if (yourMarker) {
-                yourMarker.setLatLng([lat, lng]);
-            } else {
-                yourMarker = L.marker([lat, lng], { icon }).addTo(map);
-                map.setView([lat, lng], 15);
-            }
-
-            // Update UI
-            const coordText = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
-            if (currentRole === 'driver') {
-                document.getElementById('driverCoords').textContent = coordText;
-            } else {
-                document.getElementById('customerYourCoords').textContent = coordText;
-            }
-
-            // Update distance if other location exists
-            if (otherLocation) {
-                updateDistance();
-                updateRoute();
-            }
-        }
-
-        // Simulate other user location (for demo)
-        function simulateOtherLocation() {
-            if (!yourLocation) return;
-
-            // Create location near yours
-            const offset = 0.01;
-            otherLocation = {
-                lat: yourLocation.lat + (Math.random() - 0.5) * offset,
-                lng: yourLocation.lng + (Math.random() - 0.5) * offset
-            };
-
-            // Create marker
-            const otherRole = currentRole === 'driver' ? 'customer' : 'driver';
-            const icon = L.divIcon({
-                html: `<div style="background: ${otherRole === 'driver' ? '#006847' : '#CE1126'}; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3);">
-                    <i class="fas fa-${otherRole === 'driver' ? 'car' : 'user'}"></i>
-                </div>`,
-                iconSize: [40, 40],
-                iconAnchor: [20, 20]
-            });
-
-            if (otherMarker) {
-                otherMarker.setLatLng([otherLocation.lat, otherLocation.lng]);
-            } else {
-                otherMarker = L.marker([otherLocation.lat, otherLocation.lng], { icon }).addTo(map);
-            }
-
-            // Update UI
-            const coordText = `${otherLocation.lat.toFixed(5)}, ${otherLocation.lng.toFixed(5)}`;
-            if (currentRole === 'driver') {
-                document.getElementById('customerCoords').textContent = coordText;
-            } else {
-                document.getElementById('driverLocation').textContent = coordText;
-            }
-
-            updateDistance();
-            updateRoute();
-
-            // Fit bounds to show both markers
-            const bounds = L.latLngBounds([
-                [yourLocation.lat, yourLocation.lng],
-                [otherLocation.lat, otherLocation.lng]
-            ]);
-            map.fitBounds(bounds, { padding: [50, 50] });
-
-            // Continue simulating movement
-            if (isSharing) {
-                updateInterval = setInterval(() => {
-                    if (otherLocation && yourLocation) {
-                        // Move slightly towards your location
-                        const dx = (yourLocation.lat - otherLocation.lat) * 0.1;
-                        const dy = (yourLocation.lng - otherLocation.lng) * 0.1;
-                        otherLocation.lat += dx + (Math.random() - 0.5) * 0.0001;
-                        otherLocation.lng += dy + (Math.random() - 0.5) * 0.0001;
-                        
-                        otherMarker.setLatLng([otherLocation.lat, otherLocation.lng]);
-                        
-                        const coordText = `${otherLocation.lat.toFixed(5)}, ${otherLocation.lng.toFixed(5)}`;
-                        if (currentRole === 'driver') {
-                            document.getElementById('customerCoords').textContent = coordText;
-                        } else {
-                            document.getElementById('driverLocation').textContent = coordText;
-                        }
-                        
-                        updateDistance();
-                        updateRoute();
-                    }
-                }, 3000);
-            }
-        }
-
-        // Update distance
-        function updateDistance() {
-            if (!yourLocation || !otherLocation) return;
-
-            const R = 6371; // Earth radius in km
-            const dLat = (otherLocation.lat - yourLocation.lat) * Math.PI / 180;
-            const dLon = (otherLocation.lng - yourLocation.lng) * Math.PI / 180;
-            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                      Math.cos(yourLocation.lat * Math.PI / 180) * Math.cos(otherLocation.lat * Math.PI / 180) *
-                      Math.sin(dLon/2) * Math.sin(dLon/2);
-            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            const distance = R * c;
-
-            const distText = distance < 1 ? 
-                `${(distance * 1000).toFixed(0)} meters` : 
-                `${distance.toFixed(2)} km`;
-
-            if (currentRole === 'driver') {
-                document.getElementById('distance').textContent = distText;
-            } else {
-                document.getElementById('customerDistance').textContent = distText;
-            }
-        }
-
-        // Update route line
-        function updateRoute() {
-            if (!yourLocation || !otherLocation) return;
-
-            if (routeLine) {
-                map.removeLayer(routeLine);
-            }
-
-            routeLine = L.polyline([
-                [yourLocation.lat, yourLocation.lng],
-                [otherLocation.lat, otherLocation.lng]
-            ], {
-                color: '#F7B718',
-                weight: 3,
-                dashArray: '10, 10',
-                opacity: 0.7
-            }).addTo(map);
-        }
-
-        // Stop sharing
-        function stopSharing() {
-            isSharing = false;
-
-            if (watchId) {
-                navigator.geolocation.clearWatch(watchId);
-                watchId = null;
-            }
-
-            if (updateInterval) {
-                clearInterval(updateInterval);
-                updateInterval = null;
-            }
-
-            // Clean map
-            if (yourMarker) {
-                map.removeLayer(yourMarker);
-                yourMarker = null;
-            }
-            if (otherMarker) {
-                map.removeLayer(otherMarker);
-                otherMarker = null;
+            if (riderMarker) {
+                map.removeLayer(riderMarker);
+                riderMarker = null;
             }
             if (routeLine) {
                 map.removeLayer(routeLine);
                 routeLine = null;
             }
-
-            yourLocation = null;
-            otherLocation = null;
-
-            // Reset UI
-            if (currentRole === 'driver') {
-                document.getElementById('driverStartBtn').disabled = false;
-                document.getElementById('driverStatus').classList.add('hide');
-                document.getElementById('driverStopBtn').classList.add('hide');
-            } else {
-                document.getElementById('customerStartBtn').disabled = false;
-                document.getElementById('customerStatus').classList.add('hide');
-                document.getElementById('customerStopBtn').classList.add('hide');
+            
+            // Reset location data
+            driverLocation = null;
+            riderLocation = null;
+            connectedCode = null;
+            
+            // Clear simulation interval
+            if (simulationInterval) {
+                clearInterval(simulationInterval);
+                simulationInterval = null;
             }
-
-            showNotification('Location sharing stopped', 'success');
+            
+            // Reset UI elements
+            document.getElementById('mapOverlay').classList.add('hide');
+            document.getElementById('centerBtn').classList.add('hide');
+            document.getElementById('driverTripInfo').classList.add('hide');
+            document.getElementById('customerTripInfo').classList.add('hide');
+            document.getElementById('endTripBtn').classList.add('hide');
+            document.getElementById('cancelTripBtn').classList.add('hide');
+            document.getElementById('etaTime').classList.add('hide');
+            document.getElementById('etaLabel').classList.add('hide');
+            document.getElementById('shareLocationBtn').classList.add('hide');
+            
+            // Reset status badges
+            document.getElementById('driverStatus').innerHTML = '<i class="fas fa-circle-notch"></i><span>Waiting for Rider</span>';
+            document.getElementById('driverStatus').className = 'status-badge waiting';
+            document.getElementById('customerStatus').innerHTML = '<i class="fas fa-search"></i><span>Enter Driver Code</span>';
+            document.getElementById('customerStatus').className = 'status-badge waiting';
+            
+            // Reset buttons
+            document.getElementById('startDrivingBtn').disabled = false;
+            document.getElementById('shareLocationBtn').disabled = false;
+            
+            // Reset input
+            document.getElementById('riderCodeInput').value = '';
+            
+            // Reset displays
+            document.getElementById('distanceDisplay').textContent = '--';
+            document.getElementById('etaDisplay').textContent = '--';
+            document.getElementById('etaTime').textContent = '-- min';
+            document.getElementById('distanceBadge').textContent = '--';
         }
 
-        // Handle errors
-        function handleError(error) {
-            let message = 'Location error: ';
+        // Connect rider to driver
+        function connectToDriver() {
+            const code = document.getElementById('riderCodeInput').value.trim().toUpperCase();
+            
+            if (!code) {
+                showNotification('Please enter a driver code', 'error');
+                return;
+            }
+
+            if (!code.match(/^DRV-[A-Z0-9]{4}$/)) {
+                showNotification('Invalid code format. Use: DRV-XXXX', 'error');
+                return;
+            }
+
+            connectedCode = code;
+            
+            // Update UI
+            document.getElementById('customerStatus').innerHTML = '<i class="fas fa-check-circle"></i><span>Connected to Driver</span>';
+            document.getElementById('customerStatus').classList.remove('waiting');
+            document.getElementById('customerStatus').classList.add('active');
+            document.getElementById('shareLocationBtn').classList.remove('hide');
+            
+            showNotification(`Connected to driver ${code}`, 'success');
+            
+            // Start tracking driver (simulated)
+            setTimeout(() => {
+                if (connectedCode) {
+                    simulateDriverMovement();
+                }
+            }, 1000);
+        }
+
+        // Start trip (Driver)
+        function startTrip() {
+            if (!navigator.geolocation) {
+                showNotification('Geolocation not supported', 'error');
+                return;
+            }
+
+            tripActive = true;
+
+            // Update UI
+            document.getElementById('startDrivingBtn').disabled = true;
+            document.getElementById('driverTripInfo').classList.remove('hide');
+            document.getElementById('endTripBtn').classList.remove('hide');
+            document.getElementById('driverStatus').innerHTML = '<i class="fas fa-car"></i><span>Trip Active</span>';
+            document.getElementById('driverStatus').classList.remove('waiting');
+            document.getElementById('driverStatus').classList.add('active');
+            document.getElementById('mapOverlay').classList.remove('hide');
+            document.getElementById('centerBtn').classList.remove('hide');
+
+            // Start location tracking
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    updateDriverLocation(position);
+                    
+                    watchId = navigator.geolocation.watchPosition(
+                        updateDriverLocation,
+                        handleLocationError,
+                        {
+                            enableHighAccuracy: true,
+                            maximumAge: 5000,
+                            timeout: 10000
+                        }
+                    );
+
+                    // Simulate rider after 2 seconds
+                    setTimeout(simulateRiderLocation, 2000);
+                },
+                handleLocationError
+            );
+
+            showNotification('Trip started - Tracking your location', 'success');
+        }
+
+        // Share rider location
+        function shareRiderLocation() {
+            if (!navigator.geolocation) {
+                showNotification('Geolocation not supported', 'error');
+                return;
+            }
+
+            if (!connectedCode) {
+                showNotification('Connect to a driver first', 'error');
+                return;
+            }
+
+            tripActive = true;
+
+            // Update UI
+            document.getElementById('shareLocationBtn').disabled = true;
+            document.getElementById('customerTripInfo').classList.remove('hide');
+            document.getElementById('cancelTripBtn').classList.remove('hide');
+            document.getElementById('etaTime').classList.remove('hide');
+            document.getElementById('etaLabel').classList.remove('hide');
+            document.getElementById('mapOverlay').classList.remove('hide');
+            document.getElementById('centerBtn').classList.remove('hide');
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    updateRiderLocation(position);
+                    
+                    watchId = navigator.geolocation.watchPosition(
+                        updateRiderLocation,
+                        handleLocationError,
+                        {
+                            enableHighAccuracy: true,
+                            maximumAge: 5000,
+                            timeout: 10000
+                        }
+                    );
+                },
+                handleLocationError
+            );
+
+            showNotification('Sharing your location with driver', 'success');
+        }
+
+        // Update driver location
+        function updateDriverLocation(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            driverLocation = { lat, lng };
+
+            // Create/update driver marker
+            const icon = L.divIcon({
+                html: `<div style="background: #006847; color: white; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 3px 10px rgba(0,0,0,0.3); font-size: 18px;">
+                    <i class="fas fa-car"></i>
+                </div>`,
+                iconSize: [45, 45],
+                iconAnchor: [22.5, 22.5]
+            });
+
+            if (driverMarker) {
+                driverMarker.setLatLng([lat, lng]);
+            } else {
+                driverMarker = L.marker([lat, lng], { icon }).addTo(map);
+                map.setView([lat, lng], 15);
+            }
+
+            // Update UI
+            document.getElementById('driverLocation').textContent = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+
+            updateTripDetails();
+        }
+
+        // Update rider location
+        function updateRiderLocation(position) {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            riderLocation = { lat, lng };
+
+            // Create/update rider marker
+            const icon = L.divIcon({
+                html: `<div style="background: #CE1126; color: white; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 3px 10px rgba(0,0,0,0.3); font-size: 18px;">
+                    <i class="fas fa-user"></i>
+                </div>`,
+                iconSize: [45, 45],
+                iconAnchor: [22.5, 22.5]
+            });
+
+            if (riderMarker) {
+                riderMarker.setLatLng([lat, lng]);
+            } else {
+                riderMarker = L.marker([lat, lng], { icon }).addTo(map);
+                map.setView([lat, lng], 15);
+            }
+
+            // Update UI
+            document.getElementById('riderYourLocation').textContent = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+
+            updateTripDetails();
+        }
+
+        // Simulate driver movement (for rider view)
+        function simulateDriverMovement() {
+            if (!riderLocation) {
+                setTimeout(simulateDriverMovement, 1000);
+                return;
+            }
+
+            // Place driver nearby (within 3km)
+            const offset = 0.02;
+            driverLocation = {
+                lat: riderLocation.lat + (Math.random() - 0.5) * offset,
+                lng: riderLocation.lng + (Math.random() - 0.5) * offset
+            };
+
+            const icon = L.divIcon({
+                html: `<div style="background: #006847; color: white; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 3px 10px rgba(0,0,0,0.3); font-size: 18px;">
+                    <i class="fas fa-car"></i>
+                </div>`,
+                iconSize: [45, 45],
+                iconAnchor: [22.5, 22.5]
+            });
+
+            driverMarker = L.marker([driverLocation.lat, driverLocation.lng], { icon }).addTo(map);
+
+            document.getElementById('driverLocationForRider').textContent = 
+                `${driverLocation.lat.toFixed(4)}, ${driverLocation.lng.toFixed(4)}`;
+
+            updateTripDetails();
+
+            // Animate driver moving towards rider
+            simulationInterval = setInterval(() => {
+                if (!tripActive || !driverLocation || !riderLocation) return;
+
+                const dx = (riderLocation.lat - driverLocation.lat) * 0.1;
+                const dy = (riderLocation.lng - driverLocation.lng) * 0.1;
+                
+                driverLocation.lat += dx;
+                driverLocation.lng += dy;
+
+                driverMarker.setLatLng([driverLocation.lat, driverLocation.lng]);
+                document.getElementById('driverLocationForRider').textContent = 
+                    `${driverLocation.lat.toFixed(4)}, ${driverLocation.lng.toFixed(4)}`;
+
+                updateTripDetails();
+            }, 2000);
+        }
+
+        // Simulate rider location (for driver view)
+        function simulateRiderLocation() {
+            if (!driverLocation) return;
+
+            const offset = 0.015;
+            riderLocation = {
+                lat: driverLocation.lat + (Math.random() - 0.5) * offset,
+                lng: driverLocation.lng + (Math.random() - 0.5) * offset
+            };
+
+            const icon = L.divIcon({
+                html: `<div style="background: #CE1126; color: white; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 3px 10px rgba(0,0,0,0.3); font-size: 18px;">
+                    <i class="fas fa-user"></i>
+                </div>`,
+                iconSize: [45, 45],
+                iconAnchor: [22.5, 22.5]
+            });
+
+            riderMarker = L.marker([riderLocation.lat, riderLocation.lng], { icon }).addTo(map);
+
+            document.getElementById('riderLocation').textContent = 
+                `${riderLocation.lat.toFixed(4)}, ${riderLocation.lng.toFixed(4)}`;
+
+            updateTripDetails();
+        }
+
+        // Update trip details (distance, ETA, route)
+        function updateTripDetails() {
+            if (!driverLocation || !riderLocation) return;
+
+            // Calculate distance
+            const distance = calculateDistance(
+                driverLocation.lat, driverLocation.lng,
+                riderLocation.lat, riderLocation.lng
+            );
+
+            const distText = distance < 1 ? 
+                `${Math.round(distance * 1000)} m` : 
+                `${distance.toFixed(1)} km`;
+
+            // Update distance displays
+            document.getElementById('distanceDisplay').textContent = distText;
+            document.getElementById('distanceBadge').textContent = distText;
+
+            // Calculate ETA (assuming 40 km/h average speed)
+            const eta = Math.ceil((distance / 40) * 60); // minutes
+            document.getElementById('etaDisplay').textContent = `${eta} min`;
+            document.getElementById('etaTime').textContent = `${eta} min`;
+
+            // Update route line
+            if (routeLine) {
+                map.removeLayer(routeLine);
+            }
+
+            routeLine = L.polyline([
+                [driverLocation.lat, driverLocation.lng],
+                [riderLocation.lat, riderLocation.lng]
+            ], {
+                color: '#F7B718',
+                weight: 4,
+                opacity: 0.7,
+                dashArray: '10, 10'
+            }).addTo(map);
+
+            // Fit map to show both locations
+            const bounds = L.latLngBounds([
+                [driverLocation.lat, driverLocation.lng],
+                [riderLocation.lat, riderLocation.lng]
+            ]);
+            map.fitBounds(bounds, { padding: [80, 80] });
+        }
+
+        // Calculate distance between two points using Haversine formula
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371; // Earth's radius in km
+            const dLat = (lat2 - lat1) * Math.PI / 180;
+            const dLon = (lon2 - lon1) * Math.PI / 180;
+            const a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+            const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+
+        // Handle location errors
+        function handleLocationError(error) {
+            let message = 'Unknown location error';
+            
             switch(error.code) {
                 case error.PERMISSION_DENIED:
-                    message += 'Please allow location access';
+                    message = 'Location access denied. Please enable location services.';
                     break;
                 case error.POSITION_UNAVAILABLE:
-                    message += 'Location unavailable';
+                    message = 'Location information unavailable.';
                     break;
                 case error.TIMEOUT:
-                    message += 'Request timeout';
+                    message = 'Location request timed out.';
                     break;
-                default:
-                    message += 'Unknown error';
             }
+            
             showNotification(message, 'error');
         }
 
@@ -694,13 +976,47 @@
             const notification = document.getElementById('notification');
             notification.textContent = message;
             notification.className = `notification ${type} show`;
+            
             setTimeout(() => {
                 notification.classList.remove('show');
             }, 3000);
         }
 
-        // Initialize on load
-        window.addEventListener('load', initMap);
+        // Center map on user location
+        function centerMap() {
+            if (currentRole === 'driver' && driverLocation) {
+                map.setView([driverLocation.lat, driverLocation.lng], 15);
+            } else if (currentRole === 'customer' && riderLocation) {
+                map.setView([riderLocation.lat, riderLocation.lng], 15);
+            } else {
+                showNotification('Location not available', 'error');
+            }
+        }
+
+        // End trip
+        function endTrip() {
+            tripActive = false;
+            
+            // Stop location tracking
+            if (watchId) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
+            }
+            
+            // Stop simulation
+            if (simulationInterval) {
+                clearInterval(simulationInterval);
+                simulationInterval = null;
+            }
+            
+            // Reset UI
+            resetUI();
+            
+            showNotification('Trip ended', 'info');
+        }
+
+        // Initialize app when page loads
+        window.onload = init;
     </script>
 </body>
 </html>
