@@ -30,7 +30,7 @@
         }
 
         .app-container {
-            max-width: 1200px; /* Increased width for larger map */
+            max-width: 800px;
             margin: 0 auto;
             background: white;
             border-radius: 20px;
@@ -43,7 +43,7 @@
 
         .header {
             background: white;
-            padding: 15px; /* Reduced padding for more map space */
+            padding: 20px;
             text-align: center;
             border-bottom: 2px solid var(--light);
         }
@@ -64,26 +64,29 @@
         }
 
         #map {
-            flex: 1; /* Map takes more space now */
+            flex: 1;
             width: 100%;
-            min-height: 0; /* Important for flex child to respect container height */
+            min-height: 300px;
+            background: #e0e0e0;
         }
 
         .controls {
-            padding: 15px; /* Reduced padding for more map space */
+            padding: 20px;
             background: var(--light);
             border-top: 2px solid #e9ecef;
+            max-height: 45vh;
+            overflow-y: auto;
         }
 
         .user-type {
             display: flex;
             gap: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
 
         .user-btn {
             flex: 1;
-            padding: 12px;
+            padding: 15px;
             border: 2px solid #ddd;
             border-radius: 10px;
             background: white;
@@ -99,10 +102,14 @@
             border-color: var(--primary);
         }
 
+        .user-btn:hover:not(.active) {
+            background: #f0f0f0;
+        }
+
         .btn {
             background: linear-gradient(135deg, var(--primary), #004d36);
             color: white;
-            padding: 12px;
+            padding: 15px;
             border: none;
             border-radius: 10px;
             cursor: pointer;
@@ -117,7 +124,7 @@
             margin-bottom: 10px;
         }
 
-        .btn:hover {
+        .btn:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0,104,71,0.3);
         }
@@ -127,24 +134,29 @@
             transform: none;
             box-shadow: none;
             cursor: not-allowed;
+            opacity: 0.6;
         }
 
         .btn-danger {
             background: linear-gradient(135deg, var(--secondary), #a50d1e);
         }
 
+        .btn-danger:hover:not(:disabled) {
+            box-shadow: 0 5px 15px rgba(206,17,38,0.3);
+        }
+
         .location-info {
             background: white;
-            padding: 12px;
+            padding: 15px;
             border-radius: 10px;
-            margin-top: 12px;
+            margin-top: 15px;
             display: none;
         }
 
         .info-item {
             display: flex;
             justify-content: space-between;
-            margin: 6px 0;
+            margin: 8px 0;
             padding: 5px 0;
             border-bottom: 1px solid #f1f1f1;
         }
@@ -156,6 +168,9 @@
 
         .info-value {
             color: #333;
+            text-align: right;
+            word-break: break-all;
+            max-width: 60%;
         }
 
         .notification {
@@ -169,6 +184,8 @@
             z-index: 1000;
             transform: translateX(400px);
             transition: transform 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            max-width: 300px;
         }
 
         .notification.show {
@@ -187,11 +204,6 @@
             background: linear-gradient(135deg, var(--accent), #fd7e14);
         }
 
-        .share-section {
-            display: none;
-            margin-top: 15px;
-        }
-
         .share-code {
             display: flex;
             gap: 10px;
@@ -200,7 +212,7 @@
 
         .share-code input {
             flex: 1;
-            padding: 10px;
+            padding: 12px;
             border: 2px solid #e9ecef;
             border-radius: 10px;
             font-size: 16px;
@@ -210,12 +222,56 @@
         }
 
         .share-code button {
-            padding: 10px 15px;
+            padding: 12px 20px;
             background: var(--primary);
             color: white;
             border: none;
             border-radius: 10px;
             cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .share-code button:hover {
+            background: #004d36;
+        }
+
+        .connection-status {
+            padding: 12px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 10px 0;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .status-connected {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-waiting {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .help-text {
+            text-align: center;
+            font-size: 13px;
+            color: #666;
+            margin: 10px 0;
+            line-height: 1.4;
         }
 
         @media (max-width: 768px) {
@@ -227,24 +283,15 @@
             body {
                 padding: 0;
             }
-        }
 
-        .connection-status {
-            padding: 8px;
-            border-radius: 10px;
-            text-align: center;
-            margin: 8px 0;
-            font-weight: 600;
-        }
+            .controls {
+                max-height: 50vh;
+            }
 
-        .status-connected {
-            background: #d4edda;
-            color: #155724;
-        }
-
-        .status-disconnected {
-            background: #f8d7da;
-            color: #721c24;
+            .notification {
+                right: 10px;
+                max-width: calc(100vw - 20px);
+            }
         }
     </style>
 </head>
@@ -252,7 +299,7 @@
     <div class="app-container">
         <div class="header">
             <h1><i class="fas fa-location-dot"></i> LocationShare</h1>
-            <div class="tagline">See driver and customer locations in real-time</div>
+            <div class="tagline">Real-time GPS tracking for drivers and customers</div>
         </div>
 
         <div id="map"></div>
@@ -269,14 +316,14 @@
 
             <div id="driverControls">
                 <button class="btn" onclick="startSharingLocation()" id="shareLocationBtn">
-                    <i class="fas fa-share-alt"></i> Share My Location
+                    <i class="fas fa-share-alt"></i> Start Sharing Location
                 </button>
                 <div class="share-code">
-                    <input type="text" id="shareCode" value="DRV-5A8B" readonly>
+                    <input type="text" id="shareCode" readonly>
                     <button onclick="copyShareCode()"><i class="fas fa-copy"></i></button>
                 </div>
-                <p style="text-align: center; font-size: 14px; color: #666; margin: 10px 0;">
-                    Give this code to your customer to connect
+                <p class="help-text">
+                    Share this code with your customer so they can track you
                 </p>
             </div>
 
@@ -285,13 +332,16 @@
                     <input type="text" id="customerCode" placeholder="Enter driver code">
                     <button onclick="connectToDriver()"><i class="fas fa-link"></i></button>
                 </div>
-                <button class="btn" onclick="startSharingLocation()" id="customerShareBtn">
-                    <i class="fas fa-share-alt"></i> Share My Location With Driver
+                <p class="help-text">
+                    Enter the driver's code to see their location
+                </p>
+                <button class="btn" onclick="startSharingLocation()" id="customerShareBtn" style="display: none;">
+                    <i class="fas fa-share-alt"></i> Share My Location Too
                 </button>
             </div>
 
-            <div class="connection-status" id="connectionStatus" style="display: none;">
-                <i class="fas fa-circle"></i> <span id="statusText">Connected to Driver</span>
+            <div class="connection-status status-waiting" id="connectionStatus" style="display: none;">
+                <i class="fas fa-circle pulse"></i> <span id="statusText">Not Connected</span>
             </div>
 
             <div class="location-info" id="locationInfo">
@@ -299,13 +349,21 @@
                     <span class="info-label">Your Location:</span>
                     <span class="info-value" id="yourCoords">Getting location...</span>
                 </div>
-                <div class="info-item">
+                <div class="info-item" id="otherLocationItem" style="display: none;">
                     <span class="info-label">Other's Location:</span>
-                    <span class="info-value" id="otherCoords">Waiting for connection...</span>
+                    <span class="info-value" id="otherCoords">Waiting...</span>
                 </div>
-                <div class="info-item">
+                <div class="info-item" id="distanceItem" style="display: none;">
                     <span class="info-label">Distance:</span>
                     <span class="info-value" id="distance">--</span>
+                </div>
+                <div class="info-item" id="etaItem" style="display: none;">
+                    <span class="info-label">Est. Arrival:</span>
+                    <span class="info-value" id="eta">--</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">GPS Accuracy:</span>
+                    <span class="info-value" id="accuracy">--</span>
                 </div>
                 <div class="info-item">
                     <span class="info-label">Last Updated:</span>
@@ -324,79 +382,53 @@
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script>
         // Global variables
-        let map, yourMarker, otherMarker, connectionLine;
+        let map, yourMarker, otherMarker, connectionLine, accuracyCircle;
         let isSharing = false;
         let userType = 'driver';
-        let trackingInterval = null;
+        let watchId = null;
         let shareCode = '';
-        let otherUserLocation = null;
+        let connectedCode = '';
+        let locations = {};
         let yourLocation = null;
-        let isConnected = false;
+        let otherLocation = null;
+        let updateInterval = null;
+        let locationUpdateInterval = null;
 
-        // Initialize the application
+        // Initialize app
         function init() {
+            console.log('App initializing...');
             initMap();
             generateShareCode();
-            showNotification('Select your role (Driver or Customer)', 'warning');
+            showNotification('Ready! Select your role to start', 'success');
         }
 
-        // Initialize the map
+        // Initialize map centered on Mexico City
         function initMap() {
-            // Default to Mexico City
-            map = L.map('map').setView([19.4326, -99.1332], 12);
-            
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
-            }).addTo(map);
+            console.log('Map initializing...');
+            try {
+                // Set initial view to Mexico City
+                map = L.map('map').setView([19.4326, -99.1332], 12);
+                
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    attribution: '© OpenStreetMap',
+                    maxZoom: 19
+                }).addTo(map);
 
-            // Create markers but don't add them yet
-            yourMarker = L.marker([0, 0], {
-                icon: createCustomIcon(userType === 'driver' ? 'driver' : 'customer')
-            });
-
-            otherMarker = L.marker([0, 0], {
-                icon: createCustomIcon(userType === 'driver' ? 'customer' : 'driver')
-            });
-        }
-
-        // Create custom icons for markers
-        function createCustomIcon(type) {
-            const iconColor = type === 'driver' ? '#006847' : '#CE1126';
-            const iconHtml = type === 'driver' ? 
-                '<i class="fas fa-car"></i>' : 
-                '<i class="fas fa-user"></i>';
-            
-            return L.divIcon({
-                html: `<div style="background-color: ${iconColor}; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">${iconHtml}</div>`,
-                className: 'custom-div-icon',
-                iconSize: [40, 40],
-                iconAnchor: [20, 20]
-            });
-        }
-
-        // Set user type (driver or customer)
-        function setUserType(type) {
-            userType = type;
-            
-            // Update UI
-            document.getElementById('driverBtn').classList.toggle('active', type === 'driver');
-            document.getElementById('customerBtn').classList.toggle('active', type === 'customer');
-            document.getElementById('driverControls').style.display = type === 'driver' ? 'block' : 'none';
-            document.getElementById('customerControls').style.display = type === 'customer' ? 'block' : 'none';
-            
-            // Update markers
-            yourMarker.setIcon(createCustomIcon(type));
-            otherMarker.setIcon(createCustomIcon(type === 'driver' ? 'customer' : 'driver'));
-            
-            // Reset if sharing was active
-            if (isSharing) {
-                stopSharing();
+                L.control.scale().addTo(map);
+                
+                // Fix for map rendering issues
+                setTimeout(() => {
+                    map.invalidateSize();
+                }, 300);
+                
+                console.log('Map initialized!');
+            } catch (error) {
+                console.error('Map error:', error);
+                showNotification('Map error: ' + error.message, 'error');
             }
-            
-            showNotification(`You are now set as ${type}`, 'success');
         }
 
-        // Generate a share code
+        // Generate share code
         function generateShareCode() {
             const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
             let code = '';
@@ -407,15 +439,41 @@
             document.getElementById('shareCode').value = shareCode;
         }
 
-        // Copy share code to clipboard
+        // Copy share code
         function copyShareCode() {
-            const codeInput = document.getElementById('shareCode');
-            codeInput.select();
-            document.execCommand('copy');
-            showNotification('Share code copied to clipboard!', 'success');
+            const input = document.getElementById('shareCode');
+            input.select();
+            input.setSelectionRange(0, 99999);
+            
+            try {
+                document.execCommand('copy');
+                showNotification('Code copied!', 'success');
+            } catch (err) {
+                navigator.clipboard.writeText(shareCode).then(() => {
+                    showNotification('Code copied!', 'success');
+                }).catch(() => {
+                    showNotification('Failed to copy', 'error');
+                });
+            }
         }
 
-        // Connect to driver (for customer)
+        // Set user type
+        function setUserType(type) {
+            if (isSharing) {
+                showNotification('Stop sharing before switching roles', 'warning');
+                return;
+            }
+
+            userType = type;
+            document.getElementById('driverBtn').classList.toggle('active', type === 'driver');
+            document.getElementById('customerBtn').classList.toggle('active', type === 'customer');
+            document.getElementById('driverControls').style.display = type === 'driver' ? 'block' : 'none';
+            document.getElementById('customerControls').style.display = type === 'customer' ? 'block' : 'none';
+            
+            showNotification(`You are now a ${type}`, 'success');
+        }
+
+        // Connect to driver
         function connectToDriver() {
             const code = document.getElementById('customerCode').value.trim().toUpperCase();
             if (!code) {
@@ -423,224 +481,321 @@
                 return;
             }
             
-            // In a real app, you would validate this code with a server
-            // For demo, we'll accept any code starting with DRV-
-            if (code.startsWith('DRV-')) {
-                isConnected = true;
-                document.getElementById('connectionStatus').style.display = 'block';
-                document.getElementById('connectionStatus').className = 'connection-status status-connected';
-                document.getElementById('statusText').textContent = `Connected to Driver: ${code}`;
-                showNotification('Connected to driver!', 'success');
-                
-                // Simulate receiving driver location
-                simulateOtherUserLocation();
-                
-                // Ensure markers are visible
-                if (yourLocation && map.hasLayer(yourMarker)) {
-                    yourMarker.addTo(map);
-                }
-            } else {
-                showNotification('Invalid driver code format', 'error');
+            if (!code.match(/^DRV-[A-Z0-9]{4}$/)) {
+                showNotification('Invalid code format', 'error');
+                return;
             }
+            
+            connectedCode = code;
+            document.getElementById('connectionStatus').style.display = 'flex';
+            document.getElementById('connectionStatus').className = 'connection-status status-waiting';
+            document.getElementById('statusText').textContent = `Waiting for ${code}...`;
+            document.getElementById('customerShareBtn').style.display = 'block';
+            
+            showNotification('Connecting...', 'warning');
+            startCheckingOtherLocation();
         }
 
-        // Start sharing location
+        // Start sharing
         function startSharingLocation() {
+            console.log('Start sharing...');
+            
             if (!navigator.geolocation) {
-                showNotification('Geolocation is not supported by your device', 'error');
+                showNotification('Geolocation not supported', 'error');
                 return;
             }
 
             isSharing = true;
-            
-            // Update UI
             document.getElementById('shareLocationBtn').disabled = true;
             document.getElementById('customerShareBtn').disabled = true;
             document.getElementById('stopBtn').style.display = 'block';
             document.getElementById('locationInfo').style.display = 'block';
             
-            // Start tracking location
-            trackingInterval = setInterval(() => {
-                navigator.geolocation.getCurrentPosition(
-                    position => updateYourLocation(position),
-                    handleLocationError,
-                    { 
-                        enableHighAccuracy: true,
-                        timeout: 10000,
-                        maximumAge: 0
-                    }
-                );
-            }, 5000); // Update every 5 seconds
+            if (userType === 'driver') {
+                locations[shareCode] = { type: 'driver', location: null, timestamp: Date.now() };
+            }
             
-            // Get initial location
+            showNotification('Getting location...', 'warning');
+            
             navigator.geolocation.getCurrentPosition(
-                position => updateYourLocation(position),
+                (position) => {
+                    console.log('Got position:', position.coords);
+                    updateYourLocation(position);
+                    
+                    watchId = navigator.geolocation.watchPosition(
+                        updateYourLocation,
+                        handleLocationError,
+                        { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 }
+                    );
+                    
+                    // Start updating location to shared storage
+                    startLocationUpdates();
+                },
                 handleLocationError,
-                { enableHighAccuracy: true }
+                { enableHighAccuracy: true, timeout: 10000 }
             );
-            
-            showNotification('Sharing your location...', 'success');
         }
 
-        // Update your location on the map
+        // Start updating location to shared storage
+        function startLocationUpdates() {
+            if (locationUpdateInterval) clearInterval(locationUpdateInterval);
+            
+            locationUpdateInterval = setInterval(() => {
+                if (yourLocation) {
+                    if (userType === 'driver' && shareCode) {
+                        locations[shareCode] = { 
+                            type: 'driver', 
+                            location: yourLocation, 
+                            timestamp: Date.now() 
+                        };
+                    } else if (userType === 'customer' && connectedCode) {
+                        locations[`customer-${connectedCode}`] = { 
+                            type: 'customer', 
+                            location: yourLocation, 
+                            timestamp: Date.now() 
+                        };
+                    }
+                }
+            }, 2000);
+        }
+
+        // Update your location
         function updateYourLocation(position) {
+            console.log('Updating location...');
+            
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
-            yourLocation = { lat, lng };
+            const accuracy = position.coords.accuracy || 50;
+            const speed = position.coords.speed || 0;
             
-            // Update marker - always ensure it's on the map when sharing
-            if (!map.hasLayer(yourMarker)) {
-                yourMarker.setLatLng([lat, lng]).addTo(map);
+            yourLocation = { lat, lng, accuracy, speed, timestamp: Date.now() };
+            
+            const isMoving = speed > 0.5;
+            
+            if (!yourMarker) {
+                yourMarker = L.marker([lat, lng], {
+                    icon: createCustomIcon(userType, isMoving)
+                }).addTo(map);
+                
+                yourMarker.bindPopup(`<b>You (${userType})</b>`);
+                
+                accuracyCircle = L.circle([lat, lng], {
+                    radius: accuracy,
+                    color: userType === 'driver' ? '#006847' : '#CE1126',
+                    fillColor: userType === 'driver' ? '#006847' : '#CE1126',
+                    fillOpacity: 0.1,
+                    weight: 1
+                }).addTo(map);
+                
+                map.setView([lat, lng], 15);
             } else {
                 yourMarker.setLatLng([lat, lng]);
+                yourMarker.setIcon(createCustomIcon(userType, isMoving));
+                
+                if (accuracyCircle) {
+                    accuracyCircle.setLatLng([lat, lng]);
+                    accuracyCircle.setRadius(accuracy);
+                }
             }
             
-            // Center map on your location if it's the first time
-            if (!isSharing) {
-                map.setView([lat, lng], 15);
-            }
-            
-            // Update location info
             document.getElementById('yourCoords').textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+            document.getElementById('accuracy').textContent = `±${accuracy.toFixed(0)}m`;
             document.getElementById('lastUpdate').textContent = new Date().toLocaleTimeString();
             
-            // Update distance if other user location is available
-            if (otherUserLocation) {
-                updateDistance();
+            if (otherLocation) {
+                updateConnectionVisuals();
             }
             
-            // In a real app, you would send this location to a server
-            // For demo, we'll just log it
-            console.log(`${userType} location:`, { lat, lng });
+            // Update location in shared storage
+            if (userType === 'driver' && shareCode) {
+                locations[shareCode] = { type: 'driver', location: yourLocation, timestamp: Date.now() };
+            } else if (userType === 'customer' && connectedCode) {
+                locations[`customer-${connectedCode}`] = { type: 'customer', location: yourLocation, timestamp: Date.now() };
+            }
         }
 
-        // Simulate other user location (for demo)
-        function simulateOtherUserLocation() {
-            if (!yourLocation) return;
+        // Create custom icon
+        function createCustomIcon(type, isMoving) {
+            const color = type === 'driver' ? '#006847' : '#CE1126';
+            const icon = type === 'driver' ? '<i class="fas fa-car"></i>' : '<i class="fas fa-user"></i>';
+            const pulse = isMoving ? 'pulse' : '';
             
-            // Simulate other user being nearby (within 2km)
-            const offsetLat = (Math.random() - 0.5) * 0.02; // ~2km
-            const offsetLng = (Math.random() - 0.5) * 0.02; // ~2km
+            return L.divIcon({
+                html: `<div class="${pulse}" style="background-color: ${color}; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 3px solid white; box-shadow: 0 3px 10px rgba(0,0,0,0.3);">${icon}</div>`,
+                className: '',
+                iconSize: [40, 40],
+                iconAnchor: [20, 20]
+            });
+        }
+
+        // Check other location
+        function startCheckingOtherLocation() {
+            if (updateInterval) clearInterval(updateInterval);
+            updateInterval = setInterval(checkOtherLocation, 2000);
+            checkOtherLocation();
+        }
+
+        function checkOtherLocation() {
+            if (!connectedCode) return;
             
-            otherUserLocation = {
-                lat: yourLocation.lat + offsetLat,
-                lng: yourLocation.lng + offsetLng
-            };
+            const driverData = locations[connectedCode];
             
-            // Update marker - always ensure it's on the map when connected
-            if (!map.hasLayer(otherMarker)) {
-                otherMarker.setLatLng([otherUserLocation.lat, otherUserLocation.lng]).addTo(map);
-            } else {
-                otherMarker.setLatLng([otherUserLocation.lat, otherUserLocation.lng]);
-            }
-            
-            // Update connection line
-            if (yourLocation && otherUserLocation) {
-                if (connectionLine) {
-                    map.removeLayer(connectionLine);
-                }
+            if (userType === 'customer' && driverData && driverData.location) {
+                otherLocation = driverData.location;
+                updateOtherMarker();
                 
-                connectionLine = L.polyline([
-                    [yourLocation.lat, yourLocation.lng],
-                    [otherUserLocation.lat, otherUserLocation.lng]
-                ], {
-                    color: '#F7B718',
-                    weight: 3,
-                    dashArray: '5, 10'
-                }).addTo(map);
-            }
-            
-            // Update location info
-            document.getElementById('otherCoords').textContent = 
-                `${otherUserLocation.lat.toFixed(6)}, ${otherUserLocation.lng.toFixed(6)}`;
-            
-            updateDistance();
-            
-            // Simulate movement every 10 seconds if still connected
-            if (isConnected) {
-                setTimeout(simulateOtherUserLocation, 10000);
+                document.getElementById('connectionStatus').className = 'connection-status status-connected';
+                document.getElementById('statusText').textContent = `Connected to ${connectedCode}`;
             }
         }
 
-        // Update distance between users
-        function updateDistance() {
-            if (!yourLocation || !otherUserLocation) return;
+        // Update other marker
+        function updateOtherMarker() {
+            if (!otherLocation) return;
+            
+            const otherType = userType === 'driver' ? 'customer' : 'driver';
+            const isMoving = otherLocation.speed && otherLocation.speed > 0.5;
+            
+            if (!otherMarker) {
+                otherMarker = L.marker([otherLocation.lat, otherLocation.lng], {
+                    icon: createCustomIcon(otherType, isMoving)
+                }).addTo(map);
+                
+                otherMarker.bindPopup(`<b>${otherType}</b>`);
+                
+                document.getElementById('otherLocationItem').style.display = 'flex';
+                document.getElementById('distanceItem').style.display = 'flex';
+                document.getElementById('etaItem').style.display = 'flex';
+            } else {
+                otherMarker.setLatLng([otherLocation.lat, otherLocation.lng]);
+                otherMarker.setIcon(createCustomIcon(otherType, isMoving));
+            }
+            
+            document.getElementById('otherCoords').textContent = `${otherLocation.lat.toFixed(6)}, ${otherLocation.lng.toFixed(6)}`;
+            
+            if (yourLocation) {
+                updateConnectionVisuals();
+            }
+        }
+
+        // Update connection visuals
+        function updateConnectionVisuals() {
+            if (!yourLocation || !otherLocation) return;
+            
+            if (connectionLine) {
+                map.removeLayer(connectionLine);
+            }
+            
+            connectionLine = L.polyline([
+                [yourLocation.lat, yourLocation.lng],
+                [otherLocation.lat, otherLocation.lng]
+            ], {
+                color: '#F7B718',
+                weight: 3,
+                dashArray: '10, 10',
+                opacity: 0.7
+            }).addTo(map);
             
             const distance = calculateDistance(
                 yourLocation.lat, yourLocation.lng,
-                otherUserLocation.lat, otherUserLocation.lng
+                otherLocation.lat, otherLocation.lng
             );
             
             document.getElementById('distance').textContent = 
-                distance < 1 ? 
-                `${(distance * 1000).toFixed(0)} meters` : 
-                `${distance.toFixed(2)} km`;
+                distance < 1 ? `${(distance * 1000).toFixed(0)}m` : `${distance.toFixed(2)}km`;
+            
+            const timeMin = (distance / 40) * 60;
+            document.getElementById('eta').textContent = 
+                timeMin < 1 ? '<1 min' : 
+                timeMin < 60 ? `~${Math.round(timeMin)} min` : 
+                `~${Math.floor(timeMin/60)}h ${Math.round(timeMin%60)}m`;
+            
+            const bounds = L.latLngBounds([
+                [yourLocation.lat, yourLocation.lng],
+                [otherLocation.lat, otherLocation.lng]
+            ]);
+            map.fitBounds(bounds, { padding: [50, 50] });
         }
 
-        // Calculate distance between two coordinates (Haversine formula)
+        // Calculate distance
         function calculateDistance(lat1, lon1, lat2, lon2) {
-            const R = 6371; // Earth's radius in km
+            const R = 6371;
             const dLat = (lat2 - lat1) * Math.PI / 180;
             const dLon = (lon2 - lon1) * Math.PI / 180;
-            const a = 
-                Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-                Math.sin(dLon/2) * Math.sin(dLon/2);
+            const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                      Math.sin(dLon/2) * Math.sin(dLon/2);
             const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
             return R * c;
         }
 
-        // Stop sharing location
+        // Stop sharing
         function stopSharing() {
             isSharing = false;
-            isConnected = false;
             
-            // Stop tracking
-            if (trackingInterval) {
-                clearInterval(trackingInterval);
-                trackingInterval = null;
+            if (watchId !== null) {
+                navigator.geolocation.clearWatch(watchId);
+                watchId = null;
             }
             
-            // Update UI
+            if (updateInterval) {
+                clearInterval(updateInterval);
+                updateInterval = null;
+            }
+            
+            if (locationUpdateInterval) {
+                clearInterval(locationUpdateInterval);
+                locationUpdateInterval = null;
+            }
+            
+            if (userType === 'driver' && shareCode) {
+                delete locations[shareCode];
+            } else if (userType === 'customer' && connectedCode) {
+                delete locations[`customer-${connectedCode}`];
+            }
+            
             document.getElementById('shareLocationBtn').disabled = false;
             document.getElementById('customerShareBtn').disabled = false;
             document.getElementById('stopBtn').style.display = 'none';
+            document.getElementById('locationInfo').style.display = 'none';
             document.getElementById('connectionStatus').style.display = 'none';
+            document.getElementById('otherLocationItem').style.display = 'none';
+            document.getElementById('distanceItem').style.display = 'none';
+            document.getElementById('etaItem').style.display = 'none';
             
-            // Remove markers and line
-            if (map.hasLayer(yourMarker)) {
-                map.removeLayer(yourMarker);
-            }
-            if (map.hasLayer(otherMarker)) {
-                map.removeLayer(otherMarker);
-            }
-            if (connectionLine) {
-                map.removeLayer(connectionLine);
-                connectionLine = null;
-            }
+            if (yourMarker) { map.removeLayer(yourMarker); yourMarker = null; }
+            if (otherMarker) { map.removeLayer(otherMarker); otherMarker = null; }
+            if (connectionLine) { map.removeLayer(connectionLine); connectionLine = null; }
+            if (accuracyCircle) { map.removeLayer(accuracyCircle); accuracyCircle = null; }
             
-            // Reset locations
             yourLocation = null;
-            otherUserLocation = null;
+            otherLocation = null;
+            connectedCode = '';
             
-            showNotification('Location sharing stopped', 'warning');
+            if (userType === 'driver') {
+                generateShareCode();
+            }
+            
+            showNotification('Stopped sharing', 'warning');
         }
 
-        // Handle location errors
+        // Handle location error
         function handleLocationError(error) {
-            let message = 'Unable to get your location: ';
+            console.error('Location error:', error);
+            let message = '';
             switch(error.code) {
                 case error.PERMISSION_DENIED:
-                    message += 'Location access denied. Please allow location permissions.';
+                    message = 'Location permission denied';
+                    stopSharing();
                     break;
                 case error.POSITION_UNAVAILABLE:
-                    message += 'Location unavailable.';
+                    message = 'Location unavailable';
                     break;
                 case error.TIMEOUT:
-                    message += 'Location request timeout.';
+                    message = 'Location timeout - retrying...';
                     break;
                 default:
-                    message += 'Unknown error.';
+                    message = 'Location error';
             }
             showNotification(message, 'error');
         }
@@ -650,14 +805,14 @@
             const notification = document.getElementById('notification');
             notification.textContent = message;
             notification.className = `notification ${type} show`;
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
+            setTimeout(() => notification.classList.remove('show'), 3000);
         }
 
-        // Initialize the app when page loads
+        // Initialize on load
         window.addEventListener('load', init);
+        window.addEventListener('beforeunload', () => {
+            if (isSharing) stopSharing();
+        });
     </script>
 </body>
 </html>
